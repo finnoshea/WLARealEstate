@@ -40,8 +40,8 @@ scrape_ains_for_file('test_df.pkl', 'new_ain_df.pkl',
 
 td = pd.read_pickle('test_df.pkl')
 ta = pd.read_pickle('new_ain_df.pkl')
-# ts = ta.head(5).copy()
-# ts.to_pickle('small_ain_df.pkl')
-#
-# with AINData('small_ain_df.pkl') as ain:
-#     scrape_data_for_ains(ain_df=ain.df)
+ts = ta.head(5).copy()
+ts.to_pickle('small_ain_df.pkl')
+
+with AINData('small_ain_df.pkl') as ain:
+    scrape_data_for_ains(ain_df=ain.df)

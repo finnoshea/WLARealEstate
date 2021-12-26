@@ -17,3 +17,7 @@ TYPES = {'details': 'parceldetail',
 COLUMNS = ['AIN', 'SitusStreet',
            'SitusCity', 'SitusZipCode',
            'LegalDescription']
+
+# these are the names of columns in the address book
+ROW_ELEMENTS = ['HSE_NBR', 'HSE_FRAC_NBR', 'HSE_DIR_CD', 'STR_NM',
+                'STR_SFX_CD', 'STR_SFX_DIR_CD', 'ZIP_CD']

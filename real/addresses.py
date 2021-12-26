@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from typing import List, Generator
 
-from ..resources.defaults import ADDRESS_FILE, DEFAULT_ZIPS
+from ..resources.defaults import ADDRESS_FILE, DEFAULT_ZIPS, ROW_ELEMENTS
 
 
 def get_address_csv(af: str = ADDRESS_FILE) -> pd.DataFrame:
@@ -120,10 +120,8 @@ def make_address_dict(row: pd.Series) -> dict:
     -------
     dict
     """
-    elements = ['HSE_NBR', 'HSE_FRAC_NBR', 'HSE_DIR_CD', 'STR_NM',
-                'STR_SFX_CD', 'STR_SFX_DIR_CD', 'UNIT', 'ZIP_CD']
     dd = {}
-    for elem in elements:
+    for elem in ROW_ELEMENTS:
         t = row[elem]
         if not isinstance(t, float):  # NaNs are floats
             t = str(t)
@@ -146,10 +144,8 @@ def make_address_string(row: pd.Series) -> str:
     -------
     str
     """
-    elements = ['HSE_NBR', 'HSE_FRAC_NBR', 'HSE_DIR_CD', 'STR_NM',
-                'STR_SFX_CD', 'STR_SFX_DIR_CD', 'UNIT', 'ZIP_CD']
     adr = []
-    for elem in elements:
+    for elem in ROW_ELEMENTS:
         t = row[elem]
         if not isinstance(t, float):  # NaNs are floats
             # if elem == 'UNIT':  # special case
