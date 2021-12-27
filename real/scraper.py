@@ -229,7 +229,7 @@ class AINData:
 
 def scrape_ains_for_file(address_file: str,
                          results_file: Union[str, None] = None,
-                         chunk_size: int = None,
+                         chunk_size: int = 100,
                          chunks: Union[int, None] = None,
                          base_sleep: float = 1.0
                          ) -> None:
@@ -271,22 +271,76 @@ def scrape_ains_for_file(address_file: str,
 
 
 def scrape_data_for_ains(ain_df: pd.DataFrame,
+                         number: int = 100,
                          location: Union[str, None] = None,
                          infos: List[str] = list(TYPES.keys()),
                          base_sleep: float = 1
-                         ) -> None:
+                         ) -> bool:
+    """
+    Scrapes the data requested in infos for the rows in ain_df.
+    This method is meant to be used with an AINData context manager.
 
+    Parameters
+    ----------
+    ain_df : pd.DataFrame
+        Dataframe with Assessor's ID Numbers to search for.
+    number : int
+        The number of records to scrape.
+    location : str
+        Directory where to store the scraped data.
+    infos : dict
+        dictionary of types to scrape for.  See defaults.py
+    base_sleep : float
+        How long to sleep after an API call.  Prevents hammering the server.
+        Time between calls is (random.random() + 1) * base_sleep
+
+    Returns
+    -------
+    Boolean: true if any data was scraped
+    """
     # create the column for new dataframes
     if 'Scraped' not in ain_df.columns:
         ain_df['Scraped'] = pd.Series([False] * ain_df.shape[0], dtype=bool)
     if location is None:
         location = DEFAULT_LOC
 
+    scraped = False
+    count = 0
     for index, row in ain_df.iterrows():
         if row['Scraped']:  # if this row has been searched already
             continue  # skip this row
+        elif count >= number:
+            break
+        rs = '{:s}, {:s}'.format(row['AIN'], row['SitusStreet'])
+        print('scraping info for ({:d}/{:d}): {:s}'.format(index + 1,
+                                                           ain_df.shape[0],
+                                                           rs))
         data = scrape(row['AIN'], infos=infos, base_sleep=base_sleep)
         save_json(data=data,
                   name=str(row['AIN']),
                   location=location)
         ain_df.loc[index, 'Scraped'] = True
+        scraped = True
+        count += 1
+    return scraped
+
+def scrape_chunks_for_ains(ain_df: str,
+                           chunk_size: int = 100,
+                           chunks: Union[int, None] = None,
+                           location: Union[str, None] = None,
+                           infos: List[str] = list(TYPES.keys()),
+                           base_sleep: float = 1
+                           ) -> None:
+    if chunks is None:
+        chunks = 999999999999999999
+    chunk = 0
+    keep_scraping = True
+
+    while chunk < chunks and keep_scraping:
+        with AINData(ain_df) as ain:
+            keep_scraping = scrape_data_for_ains(ain_df=ain.df,
+                                                 number=chunk_size,
+                                                 location=location,
+                                                 infos=infos,
+                                                 base_sleep=base_sleep)
+        chunk += 1
