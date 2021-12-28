@@ -307,9 +307,11 @@ def scrape_data_for_ains(ain_df: pd.DataFrame,
     scraped = False
     count = 0
     for index, row in ain_df.iterrows():
-        if row['Scraped']:  # if this row has been searched already
+        # if this row has been searched already
+        if row['Scraped'] is True:
             continue  # skip this row
         elif count >= number:
+            print('Count reached.')
             break
         rs = '{:s}, {:s}'.format(row['AIN'], row['SitusStreet'])
         print('scraping info for ({:d}/{:d}): {:s}'.format(index + 1,
@@ -322,6 +324,7 @@ def scrape_data_for_ains(ain_df: pd.DataFrame,
         ain_df.loc[index, 'Scraped'] = True
         scraped = True
         count += 1
+    print('Made it to index: {:d}'.format(index))
     return scraped
 
 def scrape_chunks_for_ains(ain_df: str,
