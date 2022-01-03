@@ -80,8 +80,6 @@ for idx, file_name in enumerate(os.listdir(JSON_LOC)):
     if '.json' in file_name:
         ASSESSED_VALUES.extend(get_assessed_values(file_name, JSON_LOC))
         FILE_COUNT += 1
-    if FILE_COUNT > 100:
-        break
 
 
 print('Processed {:d} json files.'.format(FILE_COUNT))
