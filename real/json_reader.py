@@ -7,9 +7,9 @@ from numpy import nan
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from typing import Union
+from typing import Union, Any
 
-from ..resources.defaults import DEFAULT_LOC, DEFAULT_ZIPS
+from ..resources.defaults import DEFAULT_LOC, DEFAULT_ZIPS, coerce_details
 
 
 TEST_FILE = "4248001002.json"
@@ -23,8 +23,8 @@ NUMBER_COLUMNS = ['AIN', 'Longitude', 'Latitude', 'NumOfUnits', 'YearBuilt',
                   'LandWidth', 'LandDepth', 'SaleNumber',
                   'AssessedValue']
 
-
 def make_year_month(x: str) -> str:
+    """ changes a time format of %b %Y to %Y-%m """
     if x == 'Series ID':
         return x
     dt = datetime.strptime(x, '%b %Y')
@@ -57,7 +57,7 @@ def get_assessed_values(filename: str, loc: str = DEFAULT_LOC) -> list:
         dd = json.load(f)
         try:
             sales = dd["ownership"]["Parcel_OwnershipHistory"]
-            details = dd["details"]["Parcel"]
+            details = coerce_details(dd["details"]["Parcel"])
             del details["SubPartNumber"]  # don't care about SubParts
             del details["SubParts"]
             del details["LandAcres"]  # almost always NaN
@@ -76,37 +76,32 @@ def get_assessed_values(filename: str, loc: str = DEFAULT_LOC) -> list:
     return avs
 
 
-def coerce_date(input_date: str) -> Union[datetime, float]:
-    try:
-        return datetime.strptime(input_date, '%m/%d/%Y')
-    except ValueError:
-        return nan
-
-
 for idx, file_name in enumerate(os.listdir(JSON_LOC)):
     if '.json' in file_name:
         ASSESSED_VALUES.extend(get_assessed_values(file_name, JSON_LOC))
         FILE_COUNT += 1
+    if FILE_COUNT > 100:
+        break
 
 
 print('Processed {:d} json files.'.format(FILE_COUNT))
 
 df: pd.DataFrame = pd.DataFrame(ASSESSED_VALUES)
 # some special cases
-df['ZipCode'] = df['SitusZipCode'].apply(lambda x: x[:5])  # 5-digit zipcodes
-for col in DATE_COLUMNS:
-    df[col] = df[col].apply(coerce_date)
-df[NUMBER_COLUMNS] = df[NUMBER_COLUMNS].apply(pd.to_numeric, errors='coerce')
-print('Shape before dropna: ', df.shape)
-df.dropna(subset=NUMBER_COLUMNS, inplace=True)
-print('Shape after dropna: ', df.shape)
-# only go back to 1980
-date_mask = df['RecordingDate'] > datetime(year=1979, month=12, day=31)
-df = df[date_mask]
-period_series = pd.to_datetime(df['RecordingDate']
-                               ).dt.to_period('M').astype(str).tolist()
-for col in inflation_df.columns:
-    df[col + 'Index'] = inflation_df.loc[period_series, col].values
+# df['ZipCode'] = df['SitusZipCode'].apply(lambda x: x[:5])  # 5-digit zipcodes
+# for col in DATE_COLUMNS:
+#     df[col] = df[col].apply(coerce_date)
+# df[NUMBER_COLUMNS] = df[NUMBER_COLUMNS].apply(pd.to_numeric, errors='coerce')
+# print('Shape before dropna: ', df.shape)
+# df.dropna(subset=NUMBER_COLUMNS, inplace=True)
+# print('Shape after dropna: ', df.shape)
+# # only go back to 1980
+# date_mask = df['RecordingDate'] > datetime(year=1979, month=12, day=31)
+# df = df[date_mask]
+# period_series = pd.to_datetime(df['RecordingDate']
+#                                ).dt.to_period('M').astype(str).tolist()
+# for col in inflation_df.columns:
+#     df[col + 'Index'] = inflation_df.loc[period_series, col].values
 
 
 def make_zipcode_plot(index: Union[str, None] = 'UrbanShelterIndex') -> None:
