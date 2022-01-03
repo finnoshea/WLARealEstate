@@ -36,9 +36,9 @@ else:
 
 t0 = time.time()
 # scrape all the AIN numbers you can find
-scrape_ains_for_file(ADDRESS_FILE, AIN_FILE, chunk_size=100, chunks=10)
+scrape_ains_for_file(ADDRESS_FILE, AIN_FILE, chunk_size=100, chunks=5)
 # scrape all the information for each of the ains that you can find
-scrape_chunks_for_ains(AIN_FILE, chunk_size=100, chunks=10)
+scrape_chunks_for_ains(AIN_FILE, chunk_size=100, chunks=5)
 t1 = time.time()
 print('Time to run: {:4.3f} hours'.format((t1 - t0) / 3600.0))
 
