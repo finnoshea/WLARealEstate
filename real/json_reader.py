@@ -9,15 +9,15 @@ import matplotlib.pyplot as plt
 
 from typing import Union, Any
 
-from ..resources.defaults import DEFAULT_LOC, DEFAULT_ZIPS, coerce_details
+from ..resources.defaults import (DEFAULT_LOC, DEFAULT_ZIPS,
+                                  coerce_details, coerce_sale)
 
 
 TEST_FILE = "4248001002.json"
 JSON_LOC = DEFAULT_LOC
 ASSESSED_VALUES = []
 FILE_COUNT = 0
-DATE_COLUMNS = ["PDBEffectiveDate", "RecordingDate",
-                "CreateDate", "DeleteDate"]
+# this variable is used to filter out NaN columns in the values we care about
 NUMBER_COLUMNS = ['AIN', 'Longitude', 'Latitude', 'NumOfUnits', 'YearBuilt',
                   'SqftMain', 'SqftLot', 'NumOfBeds', 'NumOfBaths',
                   'LandWidth', 'LandDepth', 'SaleNumber',
@@ -68,7 +68,7 @@ def get_assessed_values(filename: str, loc: str = DEFAULT_LOC) -> list:
                 ds = {}
                 try:
                     ds.update(details)
-                    ds.update(sale)
+                    ds.update(coerce_sale(sale))
                 except KeyError:
                     pass
                 else:
@@ -87,21 +87,16 @@ for idx, file_name in enumerate(os.listdir(JSON_LOC)):
 print('Processed {:d} json files.'.format(FILE_COUNT))
 
 df: pd.DataFrame = pd.DataFrame(ASSESSED_VALUES)
-# some special cases
-# df['ZipCode'] = df['SitusZipCode'].apply(lambda x: x[:5])  # 5-digit zipcodes
-# for col in DATE_COLUMNS:
-#     df[col] = df[col].apply(coerce_date)
-# df[NUMBER_COLUMNS] = df[NUMBER_COLUMNS].apply(pd.to_numeric, errors='coerce')
-# print('Shape before dropna: ', df.shape)
-# df.dropna(subset=NUMBER_COLUMNS, inplace=True)
-# print('Shape after dropna: ', df.shape)
-# # only go back to 1980
-# date_mask = df['RecordingDate'] > datetime(year=1979, month=12, day=31)
-# df = df[date_mask]
-# period_series = pd.to_datetime(df['RecordingDate']
-#                                ).dt.to_period('M').astype(str).tolist()
-# for col in inflation_df.columns:
-#     df[col + 'Index'] = inflation_df.loc[period_series, col].values
+print('Shape before dropna: ', df.shape)
+df.dropna(subset=NUMBER_COLUMNS, inplace=True)
+print('Shape after dropna: ', df.shape)
+# only go back to 1980
+date_mask = df['RecordingDate'] > datetime(year=1979, month=12, day=31)
+df = df[date_mask]
+period_series = pd.to_datetime(df['RecordingDate']
+                               ).dt.to_period('M').astype(str).tolist()
+for col in inflation_df.columns:
+    df[col + 'Index'] = inflation_df.loc[period_series, col].values
 
 
 def make_zipcode_plot(index: Union[str, None] = 'UrbanShelterIndex') -> None:

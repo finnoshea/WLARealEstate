@@ -110,3 +110,30 @@ def coerce_details(details: dict) -> dict:
             elif func == yn_to_bool:
                 details[key] = None
     return details
+
+
+SALE_COERCION = {'SaleNumber': int, 'RecordingDate': coerce_date,
+                 'SequenceNumber': int, 'DocumentNumber': int,
+                 'NumberOfParcels': int, 'DTTSalePrice': int,
+                 'AssessedValue': int
+                 }
+
+
+def coerce_sale(sale: dict) -> dict:
+    """
+    coerces the values in a json file's ownership/Parcel_OwnershipHistory
+    dictionary to have 'good' types
+    """
+    for key, func in SALE_COERCION.items():
+        try:
+            sale[key] = func(sale[key])
+        except KeyError:  # key doesn't exist for some reason
+            pass
+        except ValueError:  # strange format, I guess?
+            if func == int:
+                sale[key] = -1
+            elif func == float:
+                sale[key] = -1.0
+            elif func == yn_to_bool:
+                sale[key] = None
+    return sale
