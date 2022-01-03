@@ -101,7 +101,8 @@ def coerce_details(details: dict) -> dict:
         try:
             details[key] = func(details[key])
         except KeyError:  # key doesn't exist for some reason
-            pass
+            if key == 'ZipCode':  # create this entry
+                details[key] = func(details['SitusZipCode'])
         except ValueError:  # strange format, I guess?
             if func == int:
                 details[key] = -1

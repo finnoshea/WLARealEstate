@@ -103,17 +103,18 @@ def make_zipcode_plot(index: Union[str, None] = 'UrbanShelterIndex') -> None:
     else:
         divisor = df[index]
     x = df['RecordingDate']
-    y = 100 * df['AssessedValue'] / divisor
+    price = 'DTTSalePrice'  # 'AssessedValue'
+    y = 100 * df[price] / divisor
 
     colors = ['r', 'b', 'm']
     fig, axs = plt.subplots(3, 1, sharex='col', figsize=(8, 8))
     for zipcode, color, ax in zip(DEFAULT_ZIPS, colors, axs):
         strzc = str(zipcode)
-        mask = df['ZipCode'] == strzc
+        mask = (df['ZipCode'] == zipcode) & (df[price] > 0)
         ax.scatter(x[mask], y[mask], s=1, c=color, marker='.', label=strzc)
         ax.set_yscale('log')
         ax.set_ylabel('June 2019 Dollars')
-        ax.set_title(str(zipcode) + ' : ' + index)
+        ax.set_title(strzc + ' : ' + index)
         if ax == axs[-1]:
             ax.set_xlabel('RecordingDate')
     plt.show()
