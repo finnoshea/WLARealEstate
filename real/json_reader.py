@@ -2,15 +2,10 @@
 import os
 import json
 from datetime import datetime
-from numpy import nan
 
 import pandas as pd
-import matplotlib.pyplot as plt
 
-from typing import Union, Any
-
-from ..resources.defaults import (DEFAULT_LOC, DEFAULT_ZIPS,
-                                  coerce_details, coerce_sale)
+from ..resources.defaults import (DEFAULT_LOC, coerce_details, coerce_sale)
 
 
 TEST_FILE = "4248001002.json"
@@ -96,25 +91,5 @@ period_series = pd.to_datetime(df['RecordingDate']
 for col in inflation_df.columns:
     df[col + 'Index'] = inflation_df.loc[period_series, col].values
 
+df.to_pickle(os.sep.join([DEFAULT_LOC, 'wla_housing_df.pkl']))
 
-def make_zipcode_plot(index: Union[str, None] = 'UrbanShelterIndex') -> None:
-    if index is None:
-        divisor = df['ZipCode'].copy(deep=False).values.fill(1)
-    else:
-        divisor = df[index]
-    x = df['RecordingDate']
-    price = 'DTTSalePrice'  # 'AssessedValue'
-    y = 100 * df[price] / divisor
-
-    colors = ['r', 'b', 'm']
-    fig, axs = plt.subplots(3, 1, sharex='col', figsize=(8, 8))
-    for zipcode, color, ax in zip(DEFAULT_ZIPS, colors, axs):
-        strzc = str(zipcode)
-        mask = (df['ZipCode'] == zipcode) & (df[price] > 0)
-        ax.scatter(x[mask], y[mask], s=1, c=color, marker='.', label=strzc)
-        ax.set_yscale('log')
-        ax.set_ylabel('June 2019 Dollars')
-        ax.set_title(strzc + ' : ' + index)
-        if ax == axs[-1]:
-            ax.set_xlabel('RecordingDate')
-    plt.show()
