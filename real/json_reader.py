@@ -28,6 +28,7 @@ def make_year_month(x: str) -> str:
 # data from: https://data.bls.gov/pdq/SurveyOutputServlet
 # create an inflation dataframe from January 1975 to November 2021
 # CWUR0000SAH1 = CPI for Urban Wage Earners and Clerical Workers (CPI-W)
+# CWSR0000SAH1 = Shelter in U.S. city average, urban wage earners and clerical workers, seasonally adjusted
 # CWURS49ASA0 = All items in Los Angeles-Long Beach-Anaheim, CA,
 # urban wage earners and clerical workers, not seasonally adjusted
 inflation_df = pd.read_csv(os.sep.join([DEFAULT_LOC, 'inflation.txt']))
@@ -36,13 +37,16 @@ inflation_df.drop(
     axis=1, inplace=True)
 inflation_df = inflation_df.T
 inflation_df.drop(index='Series ID', inplace=True)  # delete the series names
-inflation_df.rename(columns={0: 'UrbanShelter', 1: 'LAGoods'}, inplace=True)
+inflation_df.rename(columns={0: 'CPI-W', 1: 'UrbanShelter', 2: 'LAGoods'},
+                    inplace=True)
 inflation_df.index = inflation_df.index.map(make_year_month)
-inflation_df.loc['2021-12'] = inflation_df.loc['2021-11']  # use Nov for Dec
-# re-index inflation to June 2019
+inflation_df.loc['2021-12'] = inflation_df.loc['2021-11']  # use Nov for Dec 21
+# re-index inflation to Jan 2000
+# this is the same as the Los Angeles Case-Schiller
+# https://fred.stlouisfed.org/series/LXXRSA
 for col in inflation_df.columns:
     inflation_df[col] = 100 * inflation_df[col] / \
-                        inflation_df.loc['2019-06', col]
+                        inflation_df.loc['2000-01', col]
 
 
 def get_assessed_values(filename: str, loc: str = DEFAULT_LOC) -> list:

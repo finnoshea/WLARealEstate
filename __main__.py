@@ -18,6 +18,7 @@ ADDRESS_FILE = os.sep.join(__file__.split(os.sep)[:-1] +
 AIN_FILE = os.sep.join(__file__.split(os.sep)[:-1] +
                        ['resources', 'ain_dataframe.pkl'])
 
+# build a west LA address dataframe
 def create_dataframe():
     all_df = get_address_csv()
     small_df = prune_by_zipcode(all_df)
@@ -35,7 +36,7 @@ else:
 
 
 t0 = time.time()
-# scrape all the AIN numbers you can find
+# scrape all the AIN numbers you can find from the Assessor's website
 scrape_ains_for_file(ADDRESS_FILE, AIN_FILE, chunk_size=100, chunks=5)
 # scrape all the information for each of the ains that you can find
 scrape_chunks_for_ains(AIN_FILE, chunk_size=100, chunks=5)

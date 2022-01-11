@@ -51,7 +51,7 @@ def make_zipcode_plot(df: pd.DataFrame,
 def make_bedroom_plots(df: pd.DataFrame,
                        beds: List[int] = [1, 2, 3],
                        plot_what: str = 'DTTSalePrice',
-                       index: Union[str, None] = 'UrbanShelterIndex',
+                       index: Union[str, None] = 'CPI-WIndex',
                        logplot: bool = True) -> None:
     """
 
@@ -75,7 +75,7 @@ def make_bedroom_plots(df: pd.DataFrame,
     Nothing.
     """
     if index is None:
-        df['divisor'] = df['ZipCode'].copy(deep=False).values.fill(1)
+        df['divisor'] = pd.Series(1, df.index, name='divisor')
     else:
         df['divisor'] = df[index]
 
@@ -96,7 +96,7 @@ def make_bedroom_plots(df: pd.DataFrame,
             strzc = str(zipcode)
             mask = subdf['ZipCode'] == zipcode
             meds = []
-            for year in [2005, 2020]:
+            for year in [2006, 2020]:
                 year_mask = pd.DatetimeIndex(x).year == year
                 meds.append(y[mask & year_mask].median())
             aprec = 100 * (meds[1] - meds[0]) / meds[0]
@@ -108,7 +108,8 @@ def make_bedroom_plots(df: pd.DataFrame,
             if logplot:
                 ax.set_yscale('log')
             ax.set_ylabel(plot_what)
-            ax.set_title(strzc + ' : ' + index + ' : ' + 'June 2019 Dollars')
+            ax.set_title(strzc + ' : ' + str(index) +
+                         ' : ' + 'Jan 2000 Dollars')
             ax.legend(loc='upper left')
             if ax == axs[-1]:
                 ax.set_xlabel('RecordingDate')
