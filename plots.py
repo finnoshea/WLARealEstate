@@ -7,6 +7,55 @@ from .resources.defaults import DEFAULT_ZIPS, DEFAULT_LOC
 from typing import Union, List
 
 
+def median_by_year_month(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute the median of a column grouping by year and month first.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Two column dataframe with the first column a datetime and the
+        second a float
+
+    Returns
+    -------
+    pandas dataframe
+    """
+    dt = pd.DatetimeIndex(df[df.columns[0]])
+    gb = df.groupby([dt.year, dt.month]).median()
+    gb.index = pd.to_datetime(gb.index.map(
+        lambda x: '{:d} {:d} 15'.format(x[0], x[1])
+    ))
+    return gb
+
+
+def median_by_year(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Compute the median of a column grouping by year.
+
+    NOTE: The x + 1 in the format is to conform to the convention on step
+    plots wherein the height of the line between points p and p + 1 is
+    given by the value at p + 1.  In order for the line during 2018,
+    for example, to be at the correct height, I have to set it to the date
+    2019-01-01.
+
+    Parameters
+    ----------
+    df : pandas dataframe
+        Two column dataframe with the first column a datetime and the
+        second a float
+
+    Returns
+    -------
+    pandas dataframe
+    """
+    dt = pd.DatetimeIndex(df[df.columns[0]])
+    gb = df.groupby([dt.year]).median()
+    gb.index = pd.to_datetime(gb.index.map(
+        lambda x: '{:d}'.format(x + 1)
+    ))
+    return gb
+
 def make_zipcode_plot(df: pd.DataFrame,
                       plot_what: str = 'AssessedValue',
                       index: Union[str, None] = 'UrbanShelterIndex') -> None:
@@ -88,8 +137,8 @@ def make_bedroom_plots(df: pd.DataFrame,
     for bed in beds:
         subdf = df2[df2['NumOfBeds'] == bed].dropna(inplace=False,
                                                     subset=[plot_what])
-        x = subdf['RecordingDate']
-        y = 100 * subdf[plot_what] / subdf['divisor']
+        xy = pd.DataFrame({'time': subdf['RecordingDate'],
+                           'value': 100 * subdf[plot_what] / subdf['divisor']})
         color = colors[bed % len(colors)]
         marker = markers[bed % len(markers)]
         for zipcode, ax in zip(DEFAULT_ZIPS, axs):
@@ -97,14 +146,20 @@ def make_bedroom_plots(df: pd.DataFrame,
             mask = subdf['ZipCode'] == zipcode
             meds = []
             for year in [2006, 2020]:
-                year_mask = pd.DatetimeIndex(x).year == year
-                meds.append(y[mask & year_mask].median())
+                year_mask = pd.DatetimeIndex(xy['time']).year == year
+                meds.append(xy[mask & year_mask].loc[:, 'value'].median())
             aprec = 100 * (meds[1] - meds[0]) / meds[0]
-            label = str(bed) + ' beds ' + '{:3.1f}%'.format(aprec)
-            ax.scatter(x[mask], y[mask], s=2, c=color,
-                       marker=marker, label=label)
-            ax.axhline(meds[0],
-                       color=color, linestyle='dashed')
+            label = str(bed) + ' beds ' + '{: 3.1f}%'.format(aprec)
+            ax.scatter(xy[mask].loc[:, 'time'],
+                       xy[mask].loc[:, 'value'],
+                       s=2, c=color, marker=marker,
+                       label=label, alpha=0.3)
+            # the following makes the plot too busy
+            # ax.axhline(meds[0],
+            #            color=color, linestyle='dashed')
+            trend = median_by_year(xy[mask])
+            ax.step(x=trend.index, y=trend['value'],
+                    color=color, linestyle='solid')
             if logplot:
                 ax.set_yscale('log')
             ax.set_ylabel(plot_what)
