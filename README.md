@@ -27,6 +27,12 @@ codes I wanted and then searched those addresses on the LAA website.
 That list can be found in Addresses_in_the_City_of Los Angeles.csv.
 Then I turned this into a zip-code-filtered pandas dataframe.
 
+I suppose I could have gone straight to scraping the data that I really wanted
+but, in order to spare the LAA backend, I put in a wait of 1-2 seconds
+between queries.  Given that I am looking at tens of thousands of records,
+that is a lot of time, and I wanted to collect valid AINs while writing the
+JSON processing and plotting parts.
+
 #### __main__.py
 After I have a list of addresses, I searched them one-by-one on the 
 LAA website.  Instead of looking for specific hits, I'd just search
@@ -38,8 +44,10 @@ This created a pandas dataframe of something like 30k unique AINs.
 Now, I scrape the LAA website by AIN.  This allows me to directly
 retrieve the JSON files from their back end.  I save all the information
 in separate JSON files.  I've had some bad experiences with corrupted
-files and I wanted each to be separate when saved while scraping
+files, and I wanted each to be separate when saved while scraping
 over a few days and nights.
+
+I'm primarily interested in the sales records that the LAA makes available.
 
 #### json_reader.py
 
