@@ -103,6 +103,10 @@ multiple points at nearly the same date and price.  This could be bubble-driven
 flipping leading to lots of turn over.  But that is too convenient a 
 description for my taste.
 
+At any rate, 90049 contains Brentwood, a very upscale neighborhood.  So it
+doesn't really surprise me that it is doing better than the other two zip
+codes.
+
 ### Conclusion
 
 I started out this project attempting to figure out if the plateau in housing
