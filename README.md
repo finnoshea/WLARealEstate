@@ -59,7 +59,7 @@ sales records from 1980 (or so) until today.
 I also had to do an inflation adjustment.  I got three indexes from
 the [Bureau of Labor Statistics](https://data.bls.gov/pdq/SurveyOutputServlet):
 
-- CWUR0000SAH1 = CPI for Urban Wage Earners and Clerical Workers (CPI-W
+- CWUR0000SAH1 = CPI for Urban Wage Earners and Clerical Workers (CPI-W)
 - CWSR0000SAH1 = Shelter in U.S. city average, urban wage earners and clerical workers, seasonally adjusted
 - CWURS49ASA0 = All items in Los Angeles-Long Beach-Anaheim, CA, urban wage earners and clerical workers, not seasonally adjusted
 
@@ -122,7 +122,7 @@ value on Zillow was accurate.  Looking at the trend lines in the above plots,
 I'd say the answer to that question is yes, the plateau is reflected in the
 data collected by the Los Angeles Assessor's office.
 
-### How to I used the repo
+### How to use the repo
 
 In main, set chunk_size and chunks to however many records you want to pull and
 at what rate you want to save the dataframe they are stored in.  This is mostly
